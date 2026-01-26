@@ -1,67 +1,156 @@
 http:
   routers:
+    # ===========================================
+    # Admin UI: admin.lg.local
+    # ===========================================
+    admin-host:
+      entryPoints:
+        - web
+      rule: Host(`admin.lg.local`)
+      service: admin-frontend
+      priority: 10
+
+    # ===========================================
+    # API Routes: api.lg.local
+    # ===========================================
     api-user:
       entryPoints:
         - web
-      rule: PathPrefix(`/api/user`)
+      rule: Host(`api.lg.local`) && PathPrefix(`/user`)
       service: user-service
-
-    api-user-health:
-      entryPoints:
-        - web
-      rule: Path(`/api/user/health`)
       middlewares:
-        - api-user-health-rewrite
-      service: user-service
+        - strip-api-prefix
+      priority: 20
 
     api-permissions:
       entryPoints:
         - web
-      rule: PathPrefix(`/api/permissions`)
+      rule: Host(`api.lg.local`) && PathPrefix(`/permissions`)
       service: permissions-service
+      middlewares:
+        - strip-api-prefix
+      priority: 20
 
     api-rbac:
       entryPoints:
         - web
-      rule: PathPrefix(`/api/rbac`)
+      rule: Host(`api.lg.local`) && PathPrefix(`/rbac`)
       service: permissions-service
-
-    api-permissions-health:
-      entryPoints:
-        - web
-      rule: Path(`/api/permissions/health`)
       middlewares:
-        - api-permissions-health-rewrite
-      service: permissions-service
+        - strip-api-prefix
+      priority: 20
 
-    api-api-keys:
+    api-keys:
       entryPoints:
         - web
-      rule: PathPrefix(`/api/v1`)
+      rule: Host(`api.lg.local`) && PathPrefix(`/keys`)
       service: api-keys-service
+      middlewares:
+        - rewrite-keys-to-v1
+      priority: 20
 
     api-tour:
       entryPoints:
         - web
+      rule: Host(`api.lg.local`) && PathPrefix(`/tour`)
+      service: tour-service
+      middlewares:
+        - strip-api-prefix
+      priority: 20
+
+    api-menu:
+      entryPoints:
+        - web
+      rule: Host(`api.lg.local`) && PathPrefix(`/menu`)
+      service: menu-service
+      middlewares:
+        - strip-api-prefix
+      priority: 20
+
+    api-secrets:
+      entryPoints:
+        - web
+      rule: Host(`api.lg.local`) && PathPrefix(`/secrets`)
+      service: secrets-service
+      middlewares:
+        - strip-api-prefix
+      priority: 20
+
+    # ===========================================
+    # Legacy Path-based routes (for localhost:8180)
+    # ===========================================
+    legacy-api-user:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/api/user`)
+      service: user-service
+      priority: 5
+
+    legacy-api-permissions:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/api/permissions`)
+      service: permissions-service
+      priority: 5
+
+    legacy-api-rbac:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/api/rbac`)
+      service: permissions-service
+      priority: 5
+
+    legacy-api-keys:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/api/v1`)
+      service: api-keys-service
+      priority: 5
+
+    legacy-api-tour:
+      entryPoints:
+        - web
       rule: PathPrefix(`/api/tour`)
       service: tour-service
+      priority: 5
 
-    # lg-management: Next.js Admin UI (catch-all for non-API routes)
-    admin:
+    legacy-api-menu:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/api/menu`)
+      service: menu-service
+      priority: 5
+
+    legacy-api-secrets:
+      entryPoints:
+        - web
+      rule: PathPrefix(`/api/secrets`)
+      service: secrets-service
+      priority: 5
+
+    # Catch-all for localhost (Admin UI)
+    legacy-admin:
       entryPoints:
         - web
       rule: PathPrefix(`/`)
+      service: admin-frontend
       priority: 1
-      service: lg-management
 
   middlewares:
-    api-user-health-rewrite:
-      replacePath:
-        path: /health
+    strip-api-prefix:
+      stripPrefix:
+        prefixes:
+          - /user
+          - /permissions
+          - /rbac
+          - /tour
+          - /menu
+          - /secrets
 
-    api-permissions-health-rewrite:
-      replacePath:
-        path: /health
+    rewrite-keys-to-v1:
+      replacePathRegex:
+        regex: ^/keys(.*)
+        replacement: /api/v1$1
 
   services:
     user-service:
@@ -84,8 +173,17 @@ http:
         servers:
           - url: http://tour-service:3004
 
-    # lg-management: Next.js Admin UI
-    lg-management:
+    menu-service:
       loadBalancer:
         servers:
-          - url: http://lg-management:3000
+          - url: http://menu-service:3005
+
+    secrets-service:
+      loadBalancer:
+        servers:
+          - url: http://secrets-service:3007
+
+    admin-frontend:
+      loadBalancer:
+        servers:
+          - url: http://admin:3000

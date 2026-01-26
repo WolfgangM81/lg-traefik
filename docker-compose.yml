@@ -22,6 +22,9 @@ services:
       - "traefik.http.routers.dashboard.rule=Host(`traefik.lg.local`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=web"
+      # OrbStack Integration (optional - für Port 80 ohne Konfiguration)
+      # Funktioniert nur mit OrbStack, wird von Docker Desktop ignoriert
+      - "dev.orbstack.domains=admin.lg.local,api.lg.local,traefik.lg.local"
 
 networks:
   lg-public:
