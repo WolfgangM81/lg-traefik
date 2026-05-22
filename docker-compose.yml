@@ -23,6 +23,11 @@ services:
       # OrbStack Integration (optional - für Port 80 ohne Konfiguration)
       # Funktioniert nur mit OrbStack, wird von Docker Desktop ignoriert
       - "dev.orbstack.domains=admin.lg.local,api.lg.local,traefik.lg.local"
+      - "homepage.group=lg — Infra"
+      - "homepage.name=lg Traefik"
+      - "homepage.icon=traefik"
+      - "homepage.href=http://traefik.lg.local:8480"
+      - "homepage.description=Reverse proxy — Dashboard on port 8081 (side-by-side) / 8080 (default)"
 
 networks:
   lg-public:
