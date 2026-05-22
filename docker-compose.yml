@@ -28,6 +28,12 @@ services:
       - "homepage.icon=traefik"
       - "homepage.href=http://traefik.lg.local:8480"
       - "homepage.description=Reverse proxy — Dashboard on port 8081 (side-by-side) / 8080 (default)"
+    healthcheck:
+      test: ["CMD-SHELL", "traefik healthcheck --ping || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 networks:
   lg-public:

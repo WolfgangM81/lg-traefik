@@ -3,6 +3,9 @@ api:
   dashboard: true
   insecure: true  # Disable in production
 
+# /ping endpoint für `traefik healthcheck --ping` Healthcheck im Container.
+ping: {}
+
 entryPoints:
   web:
     address: ":80"
